@@ -3,20 +3,30 @@
 import styled from 'styled-components';
 import { Card, CardTitle } from '@/components/ui/Card';
 import { Utensils, Clock, CheckCircle } from 'lucide-react';
-import React from 'react';
+import { useTransition } from 'react';
+import { logMeal } from '@/actions/meals';
+import type { Recommendation } from '@/app/api/recommendations/route';
 
-const ImagePlaceholder = styled.div`
+const mealTypeGradient: Record<string, string> = {
+  breakfast: 'linear-gradient(135deg, #78350f, #d97706)',
+  lunch:     'linear-gradient(135deg, #064e3b, #10b981)',
+  dinner:    'linear-gradient(135deg, #1e1b4b, #4f46e5)',
+  snack:     'linear-gradient(135deg, #4a044e, #a855f7)',
+};
+
+const MealBanner = styled.div<{ $mealType: string }>`
   width: 100%;
   height: 200px;
-  background: linear-gradient(135deg, #1f2937, #374151);
+  background: ${p => mealTypeGradient[p.$mealType] ?? 'linear-gradient(135deg, #1f2937, #374151)'};
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9cd1b5;
-  font-size: 1.25rem;
-  font-weight: bold;
+  color: rgba(255,255,255,0.85);
+  font-size: 1.125rem;
+  font-weight: 600;
   margin-top: 1rem;
+  letter-spacing: 0.02em;
 `;
 
 const DetailRow = styled.div`
@@ -25,7 +35,7 @@ const DetailRow = styled.div`
   color: #a3a3a3;
   font-size: 0.875rem;
   margin-top: 0.5rem;
-  
+
   & > span {
     display: flex;
     align-items: center;
@@ -33,57 +43,88 @@ const DetailRow = styled.div`
   }
 `;
 
-const LogButton = styled.button`
+const Reason = styled.p`
+  color: #d4d4d8;
+  margin-top: 1rem;
+  line-height: 1.5;
+  font-size: 0.9rem;
+`;
+
+const LogButton = styled.button<{ $pending?: boolean }>`
   margin-top: 1.5rem;
-  background-color: #3b82f6;
+  background-color: ${p => p.$pending ? '#1d4ed8' : '#3b82f6'};
   color: white;
   border: none;
   padding: 0.75rem;
   border-radius: 8px;
   font-weight: 600;
-  cursor: pointer;
+  cursor: ${p => p.$pending ? 'not-allowed' : 'pointer'};
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: background-color 0.2s;
+  opacity: ${p => p.$pending ? 0.7 : 1};
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: #2563eb;
   }
 `;
 
-export function CurrentRecommendation() {
+interface Props {
+  recommendation: Recommendation | null;
+}
+
+export function CurrentRecommendation({ recommendation }: Props) {
+  const [isPending, startTransition] = useTransition();
+
   const handleLogClick = () => {
-    alert("Logged! (This will eventually save to public.meal_logs)");
+    if (!recommendation) return;
+    startTransition(async () => {
+      await logMeal(recommendation.name, recommendation.mealType);
+    });
   };
+
+  if (!recommendation) {
+    return (
+      <Card>
+        <CardTitle>
+          <Utensils size={20} color="#3b82f6" />
+          Next Meal
+        </CardTitle>
+        <p style={{ color: '#a3a3a3', fontSize: '0.9rem' }}>
+          No recommendation available. Log some meals first!
+        </p>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardTitle>
-        <Utensils size={20} color="#3b82f6" /> 
-        Next Meal: Dinner
+        <Utensils size={20} color="#3b82f6" />
+        Next Meal: {recommendation.mealType.charAt(0).toUpperCase() + recommendation.mealType.slice(1)}
       </CardTitle>
 
-      <ImagePlaceholder>
-        Enchiladas Suizas Mockup
-      </ImagePlaceholder>
+      <MealBanner $mealType={recommendation.mealType}>
+        {recommendation.name}
+      </MealBanner>
 
       <h3 style={{ margin: '1rem 0 0.25rem 0', color: '#fff', fontSize: '1.5rem' }}>
-        Enchiladas Suizas
+        {recommendation.name}
       </h3>
-      
-      <DetailRow>
-        <span><Clock size={16} /> 45 min prep</span>
-        <span>520 kcal</span>
-      </DetailRow>
-      
-      <p style={{ color: '#d4d4d8', marginTop: '1rem', lineHeight: '1.5' }}>
-        Recommended based on your recent Chicken consumption goal and preference for spicy cheese dishes!
-      </p>
 
-      <LogButton onClick={handleLogClick}>
-        <CheckCircle size={18} /> Mark as Eaten
+      <DetailRow>
+        <span><Clock size={16} /> {recommendation.prepTimeMinutes} min</span>
+        <span>{recommendation.estimatedCalories} kcal</span>
+      </DetailRow>
+
+      <Reason>{recommendation.description}</Reason>
+      <Reason style={{ color: '#71717a', fontSize: '0.8rem' }}>{recommendation.reason}</Reason>
+
+      <LogButton onClick={handleLogClick} $pending={isPending} disabled={isPending}>
+        <CheckCircle size={18} />
+        {isPending ? 'Logging...' : 'Mark as Eaten'}
       </LogButton>
     </Card>
   );

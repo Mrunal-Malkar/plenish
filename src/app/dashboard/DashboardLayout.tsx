@@ -2,7 +2,6 @@
 
 import styled, { keyframes } from 'styled-components';
 import { AIChatBox } from '@/components/specific/AIChatBox';
-import { CurrentRecommendation } from '@/components/specific/CurrentRecommendation';
 import { LogMealForm } from '@/components/specific/LogMealForm';
 import { Utensils, LogOut } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -101,7 +100,7 @@ const LeftColumn = styled.div`
   gap: 2rem;
 `;
 
-export function DashboardLayout({ recentMealsSlot }: { recentMealsSlot: React.ReactNode }) {
+export function DashboardLayout({ recentMealsSlot, recommendationSlot }: { recentMealsSlot: React.ReactNode; recommendationSlot: React.ReactNode }) {
   const router = useRouter();
 
   async function handleSignOut() {
@@ -134,7 +133,7 @@ export function DashboardLayout({ recentMealsSlot }: { recentMealsSlot: React.Re
         {/* Right Column — Context & Progress */}
         <RightColumn>
           {recentMealsSlot}
-          <CurrentRecommendation />
+          {recommendationSlot}
         </RightColumn>
       </PageContent>
     </DashboardContainer>
