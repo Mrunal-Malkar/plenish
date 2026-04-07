@@ -5,7 +5,7 @@ import { Card, CardTitle } from '@/components/ui/Card';
 import { Utensils, Clock, CheckCircle } from 'lucide-react';
 import { useTransition } from 'react';
 import { logMeal } from '@/actions/meals';
-import type { Recommendation } from '@/app/api/recommendations/route';
+import type { Recommendation } from '@/lib/ai/getRecommendation';
 
 const mealTypeGradient: Record<string, string> = {
   breakfast: 'linear-gradient(135deg, #78350f, #d97706)',

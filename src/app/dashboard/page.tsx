@@ -4,7 +4,7 @@ import { RecommendationFetcher } from '@/components/specific/RecommendationFetch
 import { SkeletonCard } from '@/components/ui/SkeletonCard';
 import { Suspense } from 'react';
 import { Card } from '@/components/ui/Card';
-import { Loader2 } from 'lucide-react';
+import { SpinnerLoader } from '@/components/ui/SpinnerLoader';
 
 export default async function DashboardPage() {
   // We can fetch initial session-based layouts here in the future
@@ -14,7 +14,7 @@ export default async function DashboardPage() {
       recentMealsSlot={
         <Suspense fallback={
           <Card style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
-            <Loader2 style={{ animation: 'spin 1s linear infinite' }} />
+            <SpinnerLoader />
           </Card>
         }>
           <RecentMeals />

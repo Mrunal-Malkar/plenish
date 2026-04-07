@@ -22,7 +22,7 @@ const MealItem = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: transform 0.2sease, border-color 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
 
   &:hover {
     transform: translateY(-2px);
