@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import styled from 'styled-components';
 import { MealLog, deleteMeal } from '@/actions/meals';
 import { Card, CardTitle } from '@/components/ui/Card';
@@ -94,12 +95,14 @@ const EmptyState = styled.div`
 `;
 
 export function RecentMealsList({ meals }: { meals: MealLog[] }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = (id: string) => {
     if (confirm('Delete this meal log?')) {
       startTransition(async () => {
         await deleteMeal(id);
+        router.refresh();
       });
     }
   };
