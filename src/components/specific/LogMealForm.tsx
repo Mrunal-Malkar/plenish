@@ -116,8 +116,9 @@ export function LogMealForm() {
         await logMeal(logText, mealType);
         setLogText(''); // Reset form on success
         router.refresh();
-      } catch (e: any) {
-        setErrorMsg('Failed to log meal. Are your tables created?');
+      } catch (e: unknown) {
+        console.error('Failed to log meal:', e);
+        setErrorMsg('Failed to log meal. Please try again.');
       }
     });
   };

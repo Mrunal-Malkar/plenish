@@ -50,8 +50,8 @@ export async function logMeal(logText: string, mealType: MealType) {
 export async function getRecentMeals(): Promise<MealLog[]> {
   const supabase = await createClient();
   
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return [];
 
   const { data, error } = await supabase
     .from('meal_logs')
