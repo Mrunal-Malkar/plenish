@@ -81,7 +81,7 @@ export function CurrentRecommendation({ recommendation }: Props) {
   const handleLogClick = () => {
     if (!recommendation) return;
     startTransition(async () => {
-      await logMeal(recommendation.name, recommendation.mealType);
+      await logMeal(`${recommendation.name}: ${recommendation.description}`, recommendation.mealType);
     });
   };
 

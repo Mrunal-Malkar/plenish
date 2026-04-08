@@ -1,6 +1,12 @@
-import { streamText, convertToModelMessages } from 'ai';
-import { getAIModel, SYSTEM_PROMPT } from '@/lib/ai/provider';
+import { streamText, convertToModelMessages, stepCountIs } from 'ai';
+import { getAIModel, getSystemPrompt } from '@/lib/ai/provider';
 import { createClient } from '@/lib/supabase/server';
+import {
+  getMealsTool,
+  logMealTool,
+  saveRecipeTool,
+  deleteMealTool,
+} from '@/lib/ai/tools/meal-tools';
 
 export const runtime = 'nodejs';
 
@@ -15,10 +21,16 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model,
-    system: SYSTEM_PROMPT,
+    system: getSystemPrompt(),
     messages: await convertToModelMessages(messages),
+    tools: {
+      get_meals: getMealsTool,
+      log_meal: logMealTool,
+      save_recipe: saveRecipeTool,
+      delete_meal: deleteMealTool,
+    },
+    stopWhen: stepCountIs(7),
   });
 
-  // toUIMessageStreamResponse is the correct method for useChat in AI SDK v3
   return result.toUIMessageStreamResponse();
 }

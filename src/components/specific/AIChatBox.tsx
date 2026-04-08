@@ -1,6 +1,7 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import type { UIMessage } from 'ai';
 import styled from 'styled-components';
 import { Card, CardTitle } from '@/components/ui/Card';
 import { MessageSquare, Send } from 'lucide-react';
@@ -122,7 +123,7 @@ const SendButton = styled.button`
 `;
 
 export function AIChatBox() {
-  const { messages, status, error, sendMessage } = useChat() as any;
+  const { messages, status, error, sendMessage } = useChat();
   const isLoading = status === 'streaming' || status === 'submitted';
   
   const [localInput, setLocalInput] = React.useState('');
@@ -151,10 +152,10 @@ export function AIChatBox() {
           ¡Hola! Soy tu asistente de Plenish. ¿Qué comiste hoy o necesitas ayuda planificando tu semana?
         </MessageBubble>
         
-        {messages.map((m: any) => {
-          const content = m.content || m.parts?.filter((p: any) => p.type === 'text').map((p: any) => p.text).join('') || '';
+        {messages.map((m: UIMessage, i: number) => {
+          const content = m.parts?.filter((p) => p.type === 'text').map((p) => p.text).join('') ?? '';
           return (
-            <MessageBubble key={m.id || Math.random()} $role={m.role as 'user' | 'assistant'}>
+            <MessageBubble key={m.id ?? i} $role={m.role as 'user' | 'assistant'}>
               {content}
             </MessageBubble>
           );

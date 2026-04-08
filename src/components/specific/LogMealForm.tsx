@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import styled, { keyframes, css } from 'styled-components';
 import { logMeal, MealType } from '@/actions/meals';
 import { Card, CardTitle } from '@/components/ui/Card';
@@ -99,6 +100,7 @@ const SubmitButton = styled.button<{ $loading?: boolean }>`
 `;
 
 export function LogMealForm() {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [logText, setLogText] = useState('');
   const [mealType, setMealType] = useState<MealType>('lunch');
@@ -113,8 +115,10 @@ export function LogMealForm() {
       try {
         await logMeal(logText, mealType);
         setLogText(''); // Reset form on success
-      } catch (e: any) {
-        setErrorMsg('Failed to log meal. Are your tables created?');
+        router.refresh();
+      } catch (e: unknown) {
+        console.error('Failed to log meal:', e);
+        setErrorMsg('Failed to log meal. Please try again.');
       }
     });
   };

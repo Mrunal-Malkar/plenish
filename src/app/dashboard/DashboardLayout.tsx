@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import styled, { keyframes } from 'styled-components';
 import { AIChatBox } from '@/components/specific/AIChatBox';
 import { LogMealForm } from '@/components/specific/LogMealForm';
@@ -100,7 +101,7 @@ const LeftColumn = styled.div`
   gap: 2rem;
 `;
 
-export function DashboardLayout({ recentMealsSlot, recommendationSlot }: { recentMealsSlot: React.ReactNode; recommendationSlot: React.ReactNode }) {
+export function DashboardLayout({ recentMealsSlot, recommendationSlot }: { recentMealsSlot: ReactNode; recommendationSlot: ReactNode }) {
   const router = useRouter();
 
   async function handleSignOut() {
