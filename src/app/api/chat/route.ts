@@ -1,5 +1,5 @@
 import { streamText, convertToModelMessages, stepCountIs } from 'ai';
-import { getAIModel, SYSTEM_PROMPT } from '@/lib/ai/provider';
+import { getAIModel, getSystemPrompt } from '@/lib/ai/provider';
 import { createClient } from '@/lib/supabase/server';
 import {
   getMealsTool,
@@ -21,7 +21,7 @@ export async function POST(req: Request) {
 
   const result = streamText({
     model,
-    system: SYSTEM_PROMPT,
+    system: getSystemPrompt(),
     messages: await convertToModelMessages(messages),
     tools: {
       get_meals: getMealsTool,

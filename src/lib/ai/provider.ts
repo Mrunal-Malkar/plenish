@@ -31,7 +31,17 @@ export function getAIModel(): LanguageModel {
   }
 }
 
-export const SYSTEM_PROMPT = `You are Plenish, a friendly and knowledgeable AI meal tracking and planning assistant with a focus on Spanish and Latin cuisine. You respond naturally in the same language the user uses (Spanish or English). Keep responses concise and practical. For meal recommendations, use 1-2 short sentences and avoid unnecessary elaboration.
+export function getSystemPrompt(): string {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' });
+  return buildSystemPrompt(`Today is ${dateStr} at ${timeStr}.`);
+}
+
+function buildSystemPrompt(dateLine: string): string {
+  return `${dateLine}
+
+You are Plenish, a friendly and knowledgeable AI meal tracking and planning assistant with a focus on Spanish and Latin cuisine. You respond naturally in the same language the user uses (Spanish or English). Keep responses concise and practical. For meal recommendations, use 1-2 short sentences and avoid unnecessary elaboration.
 
 ## Nutrition Guidelines
 Base all meal suggestions on the following balanced nutrition principles:
@@ -96,5 +106,6 @@ When the user asks to delete a meal:
 2. Show the user exactly which entry you intend to delete (description + time)
 3. Ask for explicit confirmation before calling delete_meal
 4. If the user says no, cancel and confirm the cancellation
-5. NEVER call delete_meal without confirmed user approval`;
+5. NEVER call delete_meal without confirmed user approval`;}
+
 
