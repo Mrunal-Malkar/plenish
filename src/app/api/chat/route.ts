@@ -14,19 +14,28 @@ export async function POST(req: Request) {
   const tz = Number.isFinite(tzOffset) ? tzOffset : 0;
 
   const model = getAIModel();
-  const { getMealsTool, logMealTool, saveRecipeTool, deleteMealTool, updateMealTool } =
-    createMealTools(tz);
+  const system = await getSystemPrompt(tz, user.id, supabase);
+
+  const {
+    getMealsTool,
+    logMealTool,
+    saveRecipeTool,
+    deleteMealTool,
+    updateMealTool,
+    getDailySummaryTool,
+  } = createMealTools(tz);
 
   const result = streamText({
     model,
-    system: getSystemPrompt(tz),
+    system,
     messages: await convertToModelMessages(messages),
     tools: {
-      get_meals: getMealsTool,
-      log_meal: logMealTool,
-      save_recipe: saveRecipeTool,
-      delete_meal: deleteMealTool,
-      update_meal: updateMealTool,
+      get_meals:          getMealsTool,
+      log_meal:           logMealTool,
+      save_recipe:        saveRecipeTool,
+      delete_meal:        deleteMealTool,
+      update_meal:        updateMealTool,
+      get_daily_summary:  getDailySummaryTool,
     },
     stopWhen: stepCountIs(7),
   });

@@ -5,12 +5,32 @@ import { revalidatePath } from 'next/cache';
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
+export type ServingCategory =
+  | 'dairy' | 'grains' | 'fruit' | 'vegetables'
+  | 'fish'  | 'meat'   | 'eggs'  | 'nuts' | 'legumes';
+
+export interface MealNutrition {
+  food_groups: ('vitaminas' | 'proteinas' | 'hidratos')[];
+  protein_type:
+    | 'white_meat' | 'red_meat' | 'fish_blue' | 'fish_white'
+    | 'eggs' | 'legumes'
+    | null;
+  /** Sparse — only categories with count >= 1 are present. */
+  servings: Partial<Record<ServingCategory, number>>;
+  has_occasional_food: boolean;
+  portion_confidence: 'from_recipe' | 'stated' | 'estimated';
+}
+
 export interface MealLog {
   id: string;
   user_id: string;
   log_text: string;
   meal_type: MealType;
   recipe_ids: string[];
+  /** Structured nutrition data. Null for meals logged before this feature. */
+  nutrition: MealNutrition | null;
+  /** Temporary ingredient strings for unlinked meals. Cleared when a recipe is linked. */
+  inferred_ingredients: string[] | null;
   eaten_at: string;
   created_at: string;
 }
