@@ -134,14 +134,18 @@ export async function dismissSharedMeal(mealLogId: string) {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new Error('Unauthorized');
 
-  // Verify the caller is a co-eater (not the original logger)
+  // Verify the meal exists and the caller is a co-eater (not the original logger)
   const { data: meal } = await supabase
     .from('meal_logs')
     .select('user_id')
     .eq('id', mealLogId)
     .maybeSingle();
 
-  if (meal?.user_id === user.id) {
+  if (!meal) {
+    throw new Error('Meal not found.');
+  }
+
+  if (meal.user_id === user.id) {
     throw new Error('Use deleteMeal to remove a meal you logged yourself.');
   }
 

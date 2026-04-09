@@ -77,7 +77,36 @@ CREATE POLICY "households: update admin" ON public.households
 CREATE POLICY "households: delete admin" ON public.households
   FOR DELETE USING (public.is_household_admin(id, auth.uid()));
 
--- ─── 4. meal_logs — fix shared-meal SELECT policy ────────────────────────────
+-- ─── 4. household_members — replace overly permissive INSERT policy ──────────
+-- The original "insert auth" policy (00005) allows any authenticated user to
+-- insert any row, including rows pointing to households they don't belong to.
+-- This enables self-invite attacks via direct API calls, bypassing the
+-- assertIsAdmin() guard in the server action.
+-- Fix: allow inserts only when the caller is an admin of the target household,
+-- or is bootstrapping their own admin row as the household creator (used by
+-- createHousehold before the first member row exists).
+
+DROP POLICY IF EXISTS "household_members: insert auth"  ON public.household_members;
+DROP POLICY IF EXISTS "household_members: insert"       ON public.household_members;
+
+CREATE POLICY "household_members: insert" ON public.household_members
+  FOR INSERT WITH CHECK (
+    -- Existing admins can invite new members
+    public.is_household_admin(household_id, auth.uid())
+    -- Bootstrap: the household creator can insert their own admin membership
+    -- (called by createHousehold before any member row exists yet)
+    OR (
+      user_id  = auth.uid()
+      AND role   = 'admin'
+      AND status = 'active'
+      AND EXISTS (
+        SELECT 1 FROM public.households
+        WHERE id = household_id AND created_by = auth.uid()
+      )
+    )
+  );
+
+-- ─── 5. meal_logs — fix shared-meal SELECT policy ────────────────────────────
 
 DROP POLICY IF EXISTS "meal_logs: select own or shared" ON public.meal_logs;
 

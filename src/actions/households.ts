@@ -213,6 +213,8 @@ export async function removeMember(
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new Error('Unauthorized');
 
+  if (userId === user.id) throw new Error('Use leaveHousehold to leave the household.');
+
   await assertIsAdmin(supabase, householdId, user.id, 'Only household admins can remove members.');
 
   const { error } = await supabase

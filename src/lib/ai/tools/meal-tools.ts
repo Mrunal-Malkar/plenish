@@ -434,6 +434,18 @@ export function createMealTools(tzOffsetMinutes: number) {
         .maybeSingle();
       const householdId = membership?.household_id ?? null;
 
+      // Pre-fetch dismissed shared meal IDs so household/combined queries exclude them.
+      // RLS already enforces this exclusion, but we filter explicitly for defence-in-depth.
+      let dismissedMealIds: string[] = [];
+      if (householdId && scope !== 'individual') {
+        const { data: dismissed } = await supabase
+          .from('meal_participants')
+          .select('meal_log_id')
+          .eq('user_id', user.id)
+          .eq('dismissed', true);
+        dismissedMealIds = (dismissed ?? []).map((d) => d.meal_log_id as string);
+      }
+
       const fetchMeals = async (rangeStart: string, rangeEnd: string) => {
         let query = supabase
           .from('meal_logs')
@@ -449,6 +461,11 @@ export function createMealTools(tzOffsetMinutes: number) {
         } else {
           // combined: own meals OR shared meals from household
           query = query.or(`user_id.eq.${user.id},and(is_shared.eq.true,household_id.eq.${householdId})`);
+        }
+
+        // Exclude meals the user has dismissed
+        if (dismissedMealIds.length > 0) {
+          query = query.not('id', 'in', `(${dismissedMealIds.join(',')})`);
         }
 
         const { data } = await query;

@@ -74,6 +74,12 @@ const DeclineButton = styled.button`
   &:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
 
+const ErrorText = styled.p`
+  margin: 0;
+  color: #f87171;
+  font-size: 0.85rem;
+`;
+
 interface Props {
   householdId: string;
   householdName: string;
@@ -83,11 +89,17 @@ interface Props {
 export function PendingInvitationBanner({ householdId, householdName, invitedBy }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [error, setError] = React.useState<string | null>(null);
 
   const handle = (accept: boolean) => {
+    setError(null);
     startTransition(async () => {
-      await respondToInvitation(householdId, accept);
-      router.refresh();
+      try {
+        await respondToInvitation(householdId, accept);
+        router.refresh();
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
+      }
     });
   };
 
@@ -101,6 +113,7 @@ export function PendingInvitationBanner({ householdId, householdName, invitedBy 
         You have been invited to join <strong>{householdName}</strong>
         {invitedBy ? ` by ${invitedBy}` : ''}.
       </BannerText>
+      {error && <ErrorText>{error}</ErrorText>}
       <ButtonRow>
         <AcceptButton onClick={() => handle(true)} disabled={isPending}>
           <CheckCircle size={15} />

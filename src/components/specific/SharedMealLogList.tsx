@@ -111,6 +111,12 @@ const DismissButton = styled.button`
   &:disabled { opacity: 0.3; cursor: not-allowed; }
 `;
 
+const DismissError = styled.p`
+  margin: 0.25rem 0 0;
+  color: #f87171;
+  font-size: 0.8rem;
+`;
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Participant {
@@ -132,15 +138,20 @@ interface SharedMeal {
 export function SharedMealLogList({ meals }: { meals: SharedMeal[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [dismissError, setDismissError] = React.useState<string | null>(null);
 
   const handleDismiss = (mealId: string) => {
     if (!confirm('Hide this shared meal from your view?')) return;
+    setDismissError(null);
     startTransition(async () => {
       try {
         await dismissSharedMeal(mealId);
         router.refresh();
-      } catch {
-        // Original logger trying to dismiss their own meal — silently ignore
+      } catch (err) {
+        const message = err instanceof Error ? err.message : '';
+        // Silently ignore when the original logger accidentally hits dismiss
+        if (message.includes('logged yourself')) return;
+        setDismissError(message || 'Failed to dismiss meal.');
       }
     });
   };
@@ -152,6 +163,7 @@ export function SharedMealLogList({ meals }: { meals: SharedMeal[] }) {
         Household Meals
       </CardTitle>
 
+      {dismissError && <DismissError>{dismissError}</DismissError>}
       <MealList>
         {meals.map((meal) => {
           const date = new Date(meal.eaten_at);
