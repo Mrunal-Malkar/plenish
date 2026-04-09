@@ -1,6 +1,7 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import type { UIMessage } from 'ai';
 import styled from 'styled-components';
 import { Card, CardTitle } from '@/components/ui/Card';
@@ -123,7 +124,11 @@ const SendButton = styled.button`
 `;
 
 export function AIChatBox() {
-  const { messages, status, error, sendMessage } = useChat();
+  const { messages, status, error, sendMessage } = useChat({
+    transport: new DefaultChatTransport({
+      body: { tzOffset: new Date().getTimezoneOffset() },
+    }),
+  });
   const isLoading = status === 'streaming' || status === 'submitted';
   
   const [localInput, setLocalInput] = React.useState('');

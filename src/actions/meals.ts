@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import type { MealNutrition } from '@/lib/ai/nutrition-schemas';
 
 export type MealType = 'breakfast' | 'lunch' | 'dinner' | 'snack';
 
@@ -11,6 +12,10 @@ export interface MealLog {
   log_text: string;
   meal_type: MealType;
   recipe_ids: string[];
+  /** Structured nutrition data. Null for meals logged before this feature. */
+  nutrition: MealNutrition | null;
+  /** Temporary ingredient strings for unlinked meals. Cleared when a recipe is linked. */
+  inferred_ingredients: string[] | null;
   eaten_at: string;
   created_at: string;
 }
