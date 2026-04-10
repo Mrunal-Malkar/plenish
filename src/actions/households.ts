@@ -277,7 +277,7 @@ export async function getPendingInvitations(): Promise<PendingInvitation[]> {
 
   const { data } = await supabase
     .from('household_members')
-    .select('household_id, created_at, households(name), invited_email')
+    .select('household_id, created_at, households(name), invited_email, households(created_by(email))')
     .eq('status', 'pending')
     .or(`user_id.eq.${user.id},invited_email.eq.${user.email ?? ''}`)
     .order('created_at', { ascending: true });
@@ -287,7 +287,7 @@ export async function getPendingInvitations(): Promise<PendingInvitation[]> {
   return data.map((row) => ({
     household_id: row.household_id as string,
     household_name: (row as { households?: { name?: string } }).households?.name ?? 'Unknown Household',
-    invited_by: '',           // Enriched in UI if needed; admin name not stored on the row
+    invited_by: (row as {households:{created_by?:{email:string}}}).households?.created_by?.email??"Unknown user",           // works correctly if user email is defined.
     created_at: row.created_at as string,
   }));
 }
